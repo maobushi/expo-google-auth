@@ -1,0 +1,79 @@
+name: EAS Update & DB Migration
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'my-app/**'
+
+defaults:
+  run:
+    working-directory: ./my-app
+
+jobs:
+  update:
+    name: Deploy & Migrate
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🏗 Setup repo
+        uses: actions/checkout@v3
+
+      - name: 🏗 Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: 🏗 Setup Expo
+        uses: expo/expo-github-action@v8
+        with:
+          token: ${{ secrets.EXPO_TOKEN }}
+          expo-version: latest
+          eas-version: latest
+
+      - name: 🟢 Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: 📦 Install dependencies
+        run: bun install
+
+      # ---------------------------------------------------------
+      # Environment Variable Injection
+      # ---------------------------------------------------------
+      - name: ⚙️ Create .env for Production
+        if: github.ref == 'refs/heads/main'
+        run: |
+          echo "EXPO_PUBLIC_SUPABASE_URL=${{ secrets.PROD_SUPABASE_URL }}" >> .env
+          echo "EXPO_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.PROD_SUPABASE_KEY }}" >> .env
+
+      - name: ⚙️ Create .env for Development
+        if: github.ref == 'refs/heads/develop'
+        run: |
+          echo "EXPO_PUBLIC_SUPABASE_URL=${{ secrets.DEV_SUPABASE_URL }}" >> .env
+          echo "EXPO_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.DEV_SUPABASE_KEY }}" >> .env
+      # ---------------------------------------------------------
+
+      # ---------------------------------------------------------
+      # DB Migration (Code & DB Sync)
+      # ---------------------------------------------------------
+      - name: 🟢 Apply Migrations to Dev DB
+        if: github.ref == 'refs/heads/develop'
+        run: supabase db push --db-url ${{ secrets.DEV_DB_URL }}
+        # working-directory: ./supabase # Adjust if needed
+
+      - name: 🔴 Apply Migrations to Prod DB
+        if: github.ref == 'refs/heads/main'
+        run: supabase db push --db-url ${{ secrets.PROD_DB_URL }}
+        # working-directory: ./supabase # Adjust if needed
+      # ---------------------------------------------------------
+
+      - name: 🚀 Publish Update (Preview / Dev DB)
+        if: github.ref == 'refs/heads/develop'
+        run: eas update --branch preview --message "${{ github.event.head_commit.message }}"
+
+      - name: 🚀 Publish Update (Production / Prod DB)
+        if: github.ref == 'refs/heads/main'
+        run: eas update --branch production --message "${{ github.event.head_commit.message }}"

@@ -1,0 +1,39 @@
+name: PR Quality Check
+
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'my-app/**'
+
+defaults:
+  run:
+    working-directory: ./my-app
+
+jobs:
+  check:
+    name: Quality Check (Type, Lint, Test)
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🏗 Setup repo
+        uses: actions/checkout@v3
+
+      - name: 🏗 Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: 📦 Install dependencies
+        run: bun install
+
+      - name: 📝 Type Check
+        run: bun run tsc --noEmit
+
+      - name: 🧹 Lint Check
+        run: bun run lint
+
+      - name: 🧪 Unit Test
+        run: bun run test
+
