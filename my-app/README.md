@@ -106,7 +106,7 @@ sequenceDiagram
 | 変数名 | 取得方法 (入手先) | 設定値の例 |
 | :--- | :--- | :--- |
 | `EXPO_PUBLIC_SUPABASE_URL` | **Supabase (Dev)** > Project Settings > API | `https://xxx.supabase.co` |
-| `EXPO_PUBLIC_SUPABASE_ANON_KEY` | **Supabase (Dev)** > Project Settings > API | `eyJhbGciOiJIUzI1...` |
+| `EXPO_PUBLIC_SUPABASE_KEY` | **Supabase (Dev)** > Project Settings > API | `eyJhbGciOiJIUzI1...` |
 | `EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID` | **Google Cloud** > Credentials > OAuth 2.0 Client ID (Web) | `123...apps.googleusercontent.com` |
 
 ### 2. GitHub Actions用 (CI/CD Secrets)
