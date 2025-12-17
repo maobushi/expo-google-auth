@@ -4,7 +4,7 @@ import {
   statusCodes,
 } from '@react-native-google-signin/google-signin';
 import { supabase } from '../lib/supabase';
-import { Button, View, Alert, StyleSheet } from 'react-native';
+import { View, Alert, StyleSheet } from 'react-native';
 import { useEffect } from 'react';
 
 export default function Auth() {
@@ -19,7 +19,7 @@ export default function Auth() {
     try {
       await GoogleSignin.hasPlayServices();
       const userInfo = await GoogleSignin.signIn();
-      
+
       if (userInfo.data?.idToken) {
         const { data, error } = await supabase.auth.signInWithIdToken({
           provider: 'google',
@@ -27,10 +27,10 @@ export default function Auth() {
         });
 
         if (error) {
-            Alert.alert('Supabase Auth Error', error.message);
+          Alert.alert('Supabase Auth Error', error.message);
         } else {
-            // Successful sign in
-            console.log('User signed in:', data.session?.user.email);
+          // Successful sign in
+          console.log('User signed in:', data.session?.user.email);
         }
       } else {
         throw new Error('no ID token present!');
